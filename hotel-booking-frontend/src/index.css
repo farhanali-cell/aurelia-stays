@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+@theme {
+  --color-parchment: #FBF7EF;
+  --color-surface: #FFFFFF;
+  --color-ink: #2A2118;
+  --color-muted: #8A7B65;
+  --color-gold: #C89B3C;
+  --color-gold-dark: #A67C2E;
+  --color-success: #4F7A5C;
+  --color-danger: #B3452C;
+
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-parchment);
+  color: var(--color-ink);
+}
