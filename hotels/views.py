@@ -1,6 +1,8 @@
 from rest_framework import generics, permissions
+from rest_framework.exceptions import PermissionDenied
 from .models import Hotel, Room
 from .serializers import HotelSerializer, RoomSerializer
+
 
 class HotelListCreateView(generics.ListCreateAPIView):
     queryset = Hotel.objects.all()
@@ -12,7 +14,14 @@ class HotelListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
-        serializer.save(staff=self.request.user)
+        user = self.request.user
+
+        if user.role not in ['admin', 'staff']:
+            raise PermissionDenied(
+                "Only admin or staff users can create hotels."
+            )
+
+        serializer.save(staff=user)
 
 
 class RoomListCreateView(generics.ListCreateAPIView):
@@ -28,5 +37,12 @@ class RoomListCreateView(generics.ListCreateAPIView):
         return [permissions.AllowAny()]
 
     def perform_create(self, serializer):
+        user = self.request.user
+
+        if user.role not in ['admin', 'staff']:
+            raise PermissionDenied(
+                "Only admin or staff users can add rooms."
+            )
+
         hotel = Hotel.objects.get(id=self.kwargs['hotel_id'])
         serializer.save(hotel=hotel)
