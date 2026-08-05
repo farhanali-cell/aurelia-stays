@@ -1,12 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import api from '../api/axios';
-import { useAuth } from '../context/AuthContext';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import api from "../api/axios";
+import { useAuth } from "../context/AuthContext";
 
 const STATUS_STYLES = {
-  confirmed: { bg: 'bg-[#EAF1EC]', text: 'text-[color:var(--color-success)]', label: 'Confirmed' },
-  pending: { bg: 'bg-[#FBF2E2]', text: 'text-[color:var(--color-gold-dark)]', label: 'Pending' },
-  cancelled: { bg: 'bg-[#F6E7E2]', text: 'text-[color:var(--color-danger)]', label: 'Cancelled' },
+  confirmed: {
+    bg: "bg-[#EAF1EC]",
+    text: "text-[color:var(--color-success)]",
+    label: "Confirmed",
+  },
+  pending: {
+    bg: "bg-[#FBF2E2]",
+    text: "text-[color:var(--color-gold-dark)]",
+    label: "Pending",
+  },
+  cancelled: {
+    bg: "bg-[#F6E7E2]",
+    text: "text-[color:var(--color-danger)]",
+    label: "Cancelled",
+  },
 };
 
 function getHotelName(booking) {
@@ -16,7 +28,7 @@ function getHotelName(booking) {
     booking?.hotel?.name ||
     booking?.hotel_name ||
     booking?.room_details?.hotel?.name ||
-    'Hotel'
+    "Hotel"
   );
 }
 
@@ -31,12 +43,12 @@ function getRoomName(booking) {
 }
 
 function formatDate(dateStr) {
-  if (!dateStr) return '—';
+  if (!dateStr) return "—";
   try {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
     });
   } catch {
     return dateStr;
@@ -44,7 +56,7 @@ function formatDate(dateStr) {
 }
 
 function BookingCard({ booking }) {
-  const status = (booking.status || 'pending').toLowerCase();
+  const status = (booking.status || "pending").toLowerCase();
   const style = STATUS_STYLES[status] || STATUS_STYLES.pending;
   const hotelName = getHotelName(booking);
   const roomName = getRoomName(booking);
@@ -56,7 +68,9 @@ function BookingCard({ booking }) {
           <h3 className="font-display text-xl text-ink">{hotelName}</h3>
           {roomName && <p className="text-sm text-muted mt-1">{roomName}</p>}
         </div>
-        <span className={`text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap ${style.bg} ${style.text}`}>
+        <span
+          className={`text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap ${style.bg} ${style.text}`}
+        >
           {style.label}
         </span>
       </div>
@@ -64,23 +78,29 @@ function BookingCard({ booking }) {
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
           <p className="text-muted">Check-in</p>
-          <p className="text-ink font-medium">{formatDate(booking.check_in_date)}</p>
+          <p className="text-ink font-medium">
+            {formatDate(booking.check_in_date)}
+          </p>
         </div>
         <div>
           <p className="text-muted">Check-out</p>
-          <p className="text-ink font-medium">{formatDate(booking.check_out_date)}</p>
+          <p className="text-ink font-medium">
+            {formatDate(booking.check_out_date)}
+          </p>
         </div>
       </div>
 
       {booking.total_price && (
         <div className="text-sm">
           <span className="text-muted">Total: </span>
-          <span className="text-ink font-medium">PKR {Number(booking.total_price).toLocaleString()}</span>
+          <span className="text-ink font-medium">
+            PKR {Number(booking.total_price).toLocaleString()}
+          </span>
         </div>
       )}
 
       <div className="pt-2 border-t border-[#EFE8D8] flex gap-3">
-        {status === 'pending' && (
+        {status === "pending" && (
           <Link
             to={`/payment/${booking.id}`}
             className="text-sm font-medium px-4 py-2 rounded-lg bg-gold text-white hover:bg-gold-dark transition"
@@ -88,7 +108,7 @@ function BookingCard({ booking }) {
             Complete payment
           </Link>
         )}
-        {status === 'confirmed' && (
+        {status === "confirmed" && (
           <Link
             to="/reviews"
             className="text-sm font-medium px-4 py-2 rounded-lg border border-gold text-gold-dark hover:bg-[#FBF2E2] transition"
@@ -118,20 +138,22 @@ export default function Profile() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
 
     const fetchBookings = async () => {
       try {
-        const res = await api.get('/bookings/bookings/');
+        const res = await api.get("/bookings/");
         if (!cancelled) {
-          setBookings(Array.isArray(res.data) ? res.data : res.data.results || []);
+          setBookings(
+            Array.isArray(res.data) ? res.data : res.data.results || [],
+          );
         }
       } catch (err) {
         if (!cancelled) {
-          setError('Failed to load your bookings.');
+          setError("Failed to load your bookings.");
         }
       } finally {
         if (!cancelled) setLoading(false);
@@ -168,8 +190,12 @@ export default function Profile() {
 
         {!loading && !error && bookings.length === 0 && (
           <div className="text-center py-24">
-            <h2 className="font-display text-2xl text-ink mb-2">No bookings yet</h2>
-            <p className="text-muted mb-6">Start exploring hotels and book your next stay.</p>
+            <h2 className="font-display text-2xl text-ink mb-2">
+              No bookings yet
+            </h2>
+            <p className="text-muted mb-6">
+              Start exploring hotels and book your next stay.
+            </p>
             <Link
               to="/hotels"
               className="inline-block text-sm font-medium px-5 py-2.5 rounded-lg bg-gold text-white hover:bg-gold-dark transition"

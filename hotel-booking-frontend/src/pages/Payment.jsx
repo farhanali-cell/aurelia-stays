@@ -38,6 +38,7 @@ const CheckoutForm = ({ bookingId }) => {
 
     if (paymentIntent && paymentIntent.status === "succeeded") {
       setSuccess(true);
+      await api.post(`/payments/confirm/${bookingId}/`);
       setTimeout(() => navigate(`/booking-confirmation/${bookingId}`), 1500);
     }
     setProcessing(false);

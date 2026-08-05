@@ -1,6 +1,6 @@
 // src/pages/Reviews.jsx
-import { useEffect, useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Star,
   Search,
@@ -11,39 +11,39 @@ import {
   X,
   SearchX,
   Quote,
-} from 'lucide-react';
-import api from '../api/axios';
-import PageBanner from '../components/PageBanner';
-import { useAuth } from '../context/AuthContext';
+} from "lucide-react";
+import api from "../api/axios";
+import PageBanner from "../components/PageBanner";
+import { useAuth } from "../context/AuthContext";
 
 const PAGE_SIZE = 6;
 
 const avatarPalette = [
-  'bg-gold/15 text-gold-dark',
-  'bg-ink/10 text-ink',
-  'bg-danger/10 text-danger',
+  "bg-gold/15 text-gold-dark",
+  "bg-ink/10 text-ink",
+  "bg-danger/10 text-danger",
 ];
 
-const getInitials = (name = '') =>
+const getInitials = (name = "") =>
   name
     .trim()
-    .split(' ')
+    .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((w) => w[0]?.toUpperCase())
-    .join('') || 'G';
+    .join("") || "G";
 
 const timeAgo = (dateStr) => {
-  if (!dateStr) return '';
+  if (!dateStr) return "";
   const diff = Date.now() - new Date(dateStr).getTime();
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-  if (days <= 0) return 'Today';
-  if (days === 1) return 'Yesterday';
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
   if (days < 30) return `${days} days ago`;
   const months = Math.floor(days / 30);
-  if (months < 12) return `${months} month${months > 1 ? 's' : ''} ago`;
+  if (months < 12) return `${months} month${months > 1 ? "s" : ""} ago`;
   const years = Math.floor(months / 12);
-  return `${years} year${years > 1 ? 's' : ''} ago`;
+  return `${years} year${years > 1 ? "s" : ""} ago`;
 };
 
 // Tries several possible shapes of the booking's room/hotel data
@@ -53,14 +53,14 @@ const bookingLabel = (booking) => {
     booking.room?.hotel?.name ||
     booking.room_detail?.hotel?.name ||
     booking.hotel_name ||
-    'Hotel';
+    "Hotel";
   const roomType =
     booking.room?.room_type ||
     booking.room_detail?.room_type ||
     booking.room_type ||
-    '';
+    "";
   const checkIn = booking.check_in_date;
-  return `${hotelName}${roomType ? ` — ${roomType}` : ''}${checkIn ? ` (${checkIn})` : ''}`;
+  return `${hotelName}${roomType ? ` — ${roomType}` : ""}${checkIn ? ` (${checkIn})` : ""}`;
 };
 
 const StarRow = ({ rating = 0, size = 15 }) => (
@@ -69,7 +69,11 @@ const StarRow = ({ rating = 0, size = 15 }) => (
       <Star
         key={n}
         size={size}
-        className={n <= Math.round(rating) ? 'text-gold fill-gold' : 'text-ink/15 fill-ink/15'}
+        className={
+          n <= Math.round(rating)
+            ? "text-gold fill-gold"
+            : "text-ink/15 fill-ink/15"
+        }
       />
     ))}
   </div>
@@ -92,8 +96,8 @@ const StarPicker = ({ value, onChange }) => {
             size={26}
             className={
               n <= (hovered || value)
-                ? 'text-gold fill-gold transition-colors'
-                : 'text-ink/15 fill-ink/15 transition-colors'
+                ? "text-gold fill-gold transition-colors"
+                : "text-ink/15 fill-ink/15 transition-colors"
             }
           />
         </button>
@@ -116,7 +120,7 @@ const SkeletonCard = () => (
   </div>
 );
 
-const emptyForm = { booking: '', rating: 0, comment: '' };
+const emptyForm = { booking: "", rating: 0, comment: "" };
 
 const Reviews = () => {
   const { user } = useAuth?.() || {};
@@ -125,32 +129,32 @@ const Reviews = () => {
   const [hotels, setHotels] = useState([]);
   const [myBookings, setMyBookings] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedHotel, setSelectedHotel] = useState('All');
-  const [sortOrder, setSortOrder] = useState('newest');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedHotel, setSelectedHotel] = useState("All");
+  const [sortOrder, setSortOrder] = useState("newest");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState('');
+  const [formError, setFormError] = useState("");
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   const fetchData = async () => {
     try {
       const [reviewsRes, hotelsRes, bookingsRes] = await Promise.all([
-        api.get('/reviews/'),
-        api.get('/hotels/'),
-        api.get('/bookings/bookings/'),
+        api.get("/reviews/"),
+        api.get("/hotels/"),
+        api.get("/bookings/"),
       ]);
       setReviews(reviewsRes.data);
       setHotels(hotelsRes.data);
       setMyBookings(bookingsRes.data);
     } catch (err) {
-      setError('Failed to load reviews. Please try again.');
+      setError("Failed to load reviews. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -160,28 +164,27 @@ const Reviews = () => {
     fetchData();
   }, []);
 
-  const hotelName = (review) =>
-    review.hotel_name || review.hotel?.name || 'Unknown Hotel';
-
-  const reviewerName = (review) =>
-    review.user_name || review.user?.name || 'Guest';
-
+  const hotelName = (review) => review.hotel_name || "Unknown Hotel";
+  const reviewerName = (review) => review.guest_username || "Guest";
   const hotelNames = useMemo(() => {
     const names = [...new Set(hotels.map((h) => h.name).filter(Boolean))];
-    return ['All', ...names];
+    return ["All", ...names];
   }, [hotels]);
 
   // Bookings that are confirmed AND not already reviewed
   const reviewableBookings = useMemo(() => {
-    const reviewedBookingIds = new Set(reviews.map((r) => r.booking?.id ?? r.booking));
+    const reviewedBookingIds = new Set(
+      reviews.map((r) => r.booking?.id ?? r.booking),
+    );
     return myBookings.filter(
-      (b) => b.status === 'confirmed' && !reviewedBookingIds.has(b.id)
+      (b) => b.status === "confirmed" && !reviewedBookingIds.has(b.id),
     );
   }, [myBookings, reviews]);
 
   const filteredReviews = useMemo(() => {
     let result = reviews.filter((r) => {
-      const matchesHotel = selectedHotel === 'All' || hotelName(r) === selectedHotel;
+      const matchesHotel =
+        selectedHotel === "All" || hotelName(r) === selectedHotel;
       const term = searchTerm.toLowerCase();
       const matchesSearch =
         !term ||
@@ -191,13 +194,17 @@ const Reviews = () => {
       return matchesHotel && matchesSearch;
     });
 
-    if (sortOrder === 'newest') {
-      result = [...result].sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-    } else if (sortOrder === 'oldest') {
-      result = [...result].sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
-    } else if (sortOrder === 'high-low') {
+    if (sortOrder === "newest") {
+      result = [...result].sort(
+        (a, b) => new Date(b.created_at) - new Date(a.created_at),
+      );
+    } else if (sortOrder === "oldest") {
+      result = [...result].sort(
+        (a, b) => new Date(a.created_at) - new Date(b.created_at),
+      );
+    } else if (sortOrder === "high-low") {
       result = [...result].sort((a, b) => b.rating - a.rating);
-    } else if (sortOrder === 'low-high') {
+    } else if (sortOrder === "low-high") {
       result = [...result].sort((a, b) => a.rating - b.rating);
     }
 
@@ -222,19 +229,23 @@ const Reviews = () => {
 
   const openWriteForm = () => {
     setEditingId(null);
-    setForm({ booking: reviewableBookings[0]?.id || '', rating: 0, comment: '' });
-    setFormError('');
+    setForm({
+      booking: reviewableBookings[0]?.id || "",
+      rating: 0,
+      comment: "",
+    });
+    setFormError("");
     setFormOpen(true);
   };
 
   const openEditForm = (review) => {
     setEditingId(review.id);
     setForm({
-      booking: review.booking?.id || review.booking || '',
+      booking: review.booking?.id || review.booking || "",
       rating: review.rating,
       comment: review.comment,
     });
-    setFormError('');
+    setFormError("");
     setFormOpen(true);
   };
 
@@ -242,17 +253,18 @@ const Reviews = () => {
     setFormOpen(false);
     setForm(emptyForm);
     setEditingId(null);
-    setFormError('');
+    setFormError("");
   };
 
   const submitForm = async (e) => {
     e.preventDefault();
-    if (!form.booking) return setFormError('Please choose a booking to review.');
-    if (!form.rating) return setFormError('Please select a star rating.');
-    if (!form.comment.trim()) return setFormError('Please write a comment.');
+    if (!form.booking)
+      return setFormError("Please choose a booking to review.");
+    if (!form.rating) return setFormError("Please select a star rating.");
+    if (!form.comment.trim()) return setFormError("Please write a comment.");
 
     setSubmitting(true);
-    setFormError('');
+    setFormError("");
     try {
       if (editingId) {
         await api.patch(`/reviews/${editingId}/`, {
@@ -260,7 +272,7 @@ const Reviews = () => {
           comment: form.comment,
         });
       } else {
-        await api.post('/reviews/', {
+        await api.post("/reviews/", {
           booking: form.booking,
           rating: form.rating,
           comment: form.comment,
@@ -271,8 +283,10 @@ const Reviews = () => {
     } catch (err) {
       const backendMsg =
         err?.response?.data &&
-        Object.values(err.response.data).flat().join(' ');
-      setFormError(backendMsg || 'Something went wrong while saving your review.');
+        Object.values(err.response.data).flat().join(" ");
+      setFormError(
+        backendMsg || "Something went wrong while saving your review.",
+      );
     } finally {
       setSubmitting(false);
     }
@@ -283,7 +297,7 @@ const Reviews = () => {
       await api.delete(`/reviews/${id}/`);
       setReviews((prev) => prev.filter((r) => r.id !== id));
     } catch (err) {
-      setError('Failed to delete review. Please try again.');
+      setError("Failed to delete review. Please try again.");
     } finally {
       setConfirmDeleteId(null);
     }
@@ -301,21 +315,30 @@ const Reviews = () => {
         {!loading && !error && totalReviews > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-surface rounded-2xl border border-gold/10 shadow-sm p-6 mb-8">
             <div className="flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-ink/5 pb-6 md:pb-0">
-              <span className="font-display text-5xl text-ink">{averageRating.toFixed(1)}</span>
+              <span className="font-display text-5xl text-ink">
+                {averageRating.toFixed(1)}
+              </span>
               <StarRow rating={averageRating} size={17} />
               <span className="text-xs text-muted font-inter mt-2">
-                Based on {totalReviews} review{totalReviews !== 1 ? 's' : ''}
+                Based on {totalReviews} review{totalReviews !== 1 ? "s" : ""}
               </span>
             </div>
 
             <div className="md:col-span-2 flex flex-col justify-center gap-1.5">
               {breakdown.map(({ star, count }) => (
-                <div key={star} className="flex items-center gap-3 text-sm font-inter">
+                <div
+                  key={star}
+                  className="flex items-center gap-3 text-sm font-inter"
+                >
                   <span className="w-10 text-muted shrink-0">{star} star</span>
                   <div className="flex-1 h-2 rounded-full bg-ink/5 overflow-hidden">
                     <div
                       className="h-full bg-gold rounded-full"
-                      style={{ width: totalReviews ? `${(count / totalReviews) * 100}%` : '0%' }}
+                      style={{
+                        width: totalReviews
+                          ? `${(count / totalReviews) * 100}%`
+                          : "0%",
+                      }}
                     />
                   </div>
                   <span className="w-8 text-right text-muted">{count}</span>
@@ -345,7 +368,7 @@ const Reviews = () => {
             >
               {hotelNames.map((name) => (
                 <option key={name} value={name}>
-                  {name === 'All' ? 'All Hotels' : name}
+                  {name === "All" ? "All Hotels" : name}
                 </option>
               ))}
             </select>
@@ -376,7 +399,8 @@ const Reviews = () => {
 
         {!loading && !error && (
           <p className="text-sm font-inter text-muted mb-8 -mt-4">
-            {filteredReviews.length} review{filteredReviews.length !== 1 ? 's' : ''} shown
+            {filteredReviews.length} review
+            {filteredReviews.length !== 1 ? "s" : ""} shown
           </p>
         )}
 
@@ -395,9 +419,12 @@ const Reviews = () => {
             <div className="bg-gold/10 rounded-full p-5 mb-5">
               <SearchX size={36} className="text-gold-dark" />
             </div>
-            <h3 className="font-display text-xl text-ink mb-2">No reviews found</h3>
+            <h3 className="font-display text-xl text-ink mb-2">
+              No reviews found
+            </h3>
             <p className="text-sm text-muted max-w-sm">
-              Try adjusting your search, hotel filter, or be the first to share your experience.
+              Try adjusting your search, hotel filter, or be the first to share
+              your experience.
             </p>
           </div>
         )}
@@ -406,7 +433,7 @@ const Reviews = () => {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-7">
               {visibleReviews.map((review, i) => {
-                const mine = user && (review.user_id === user.id || review.user?.id === user.id);
+                const mine = user && review.guest === user.id;
                 const palette = avatarPalette[review.id % avatarPalette.length];
                 const isConfirming = confirmDeleteId === review.id;
 
@@ -415,21 +442,31 @@ const Reviews = () => {
                     key={review.id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: (i % PAGE_SIZE) * 0.06 }}
+                    transition={{
+                      duration: 0.4,
+                      delay: (i % PAGE_SIZE) * 0.06,
+                    }}
                     whileHover={{ y: -4 }}
                     className="relative bg-surface rounded-2xl border border-gold/10 shadow-sm hover:shadow-xl hover:border-gold/30 transition-all duration-300 p-5 flex flex-col"
                   >
-                    <Quote size={40} className="absolute top-4 right-4 text-gold/10" />
+                    <Quote
+                      size={40}
+                      className="absolute top-4 right-4 text-gold/10"
+                    />
 
                     <div className="flex items-center gap-3 mb-4">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${palette}`}>
+                      <div
+                        className={`h-10 w-10 rounded-full flex items-center justify-center font-display text-sm shrink-0 ${palette}`}
+                      >
                         {getInitials(reviewerName(review))}
                       </div>
                       <div className="min-w-0">
                         <p className="font-inter font-semibold text-sm text-ink truncate">
                           {reviewerName(review)}
                         </p>
-                        <p className="text-xs text-muted truncate">{hotelName(review)}</p>
+                        <p className="text-xs text-muted truncate">
+                          {hotelName(review)}
+                        </p>
                       </div>
                     </div>
 
@@ -440,7 +477,9 @@ const Reviews = () => {
                     </p>
 
                     <div className="flex items-center justify-between mt-4 pt-3 border-t border-ink/5">
-                      <span className="text-xs text-muted">{timeAgo(review.created_at)}</span>
+                      <span className="text-xs text-muted">
+                        {timeAgo(review.created_at)}
+                      </span>
 
                       {mine && (
                         <div className="flex items-center gap-1">
@@ -518,7 +557,7 @@ const Reviews = () => {
             >
               <div className="flex items-center justify-between mb-5">
                 <h3 className="font-display text-xl text-ink">
-                  {editingId ? 'Edit Your Review' : 'Write a Review'}
+                  {editingId ? "Edit Your Review" : "Write a Review"}
                 </h3>
                 <button
                   onClick={closeForm}
@@ -536,7 +575,9 @@ const Reviews = () => {
                   <select
                     value={form.booking}
                     disabled={!!editingId}
-                    onChange={(e) => setForm((f) => ({ ...f, booking: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, booking: e.target.value }))
+                    }
                     className="mt-1.5 w-full bg-parchment border border-gold/10 rounded-xl px-4 py-2.5 text-sm font-inter text-ink outline-none disabled:opacity-60"
                   >
                     <option value="">Select a booking</option>
@@ -558,7 +599,10 @@ const Reviews = () => {
                     Your Rating
                   </label>
                   <div className="mt-2">
-                    <StarPicker value={form.rating} onChange={(r) => setForm((f) => ({ ...f, rating: r }))} />
+                    <StarPicker
+                      value={form.rating}
+                      onChange={(r) => setForm((f) => ({ ...f, rating: r }))}
+                    />
                   </div>
                 </div>
 
@@ -569,13 +613,17 @@ const Reviews = () => {
                   <textarea
                     rows={4}
                     value={form.comment}
-                    onChange={(e) => setForm((f) => ({ ...f, comment: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, comment: e.target.value }))
+                    }
                     placeholder="Share details of your own experience at this hotel..."
                     className="mt-1.5 w-full bg-parchment border border-gold/10 rounded-xl px-4 py-3 text-sm font-inter text-ink outline-none resize-none placeholder:text-muted"
                   />
                 </div>
 
-                {formError && <p className="text-sm text-danger font-inter">{formError}</p>}
+                {formError && (
+                  <p className="text-sm text-danger font-inter">{formError}</p>
+                )}
 
                 <div className="flex gap-3 pt-1">
                   <button
@@ -590,7 +638,11 @@ const Reviews = () => {
                     disabled={submitting}
                     className="flex-1 px-5 py-2.5 rounded-xl bg-gold text-white font-inter text-sm font-semibold hover:bg-gold-dark transition-colors disabled:opacity-60"
                   >
-                    {submitting ? 'Saving...' : editingId ? 'Save Changes' : 'Submit Review'}
+                    {submitting
+                      ? "Saving..."
+                      : editingId
+                        ? "Save Changes"
+                        : "Submit Review"}
                   </button>
                 </div>
               </form>

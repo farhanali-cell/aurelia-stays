@@ -27,7 +27,7 @@ def create_payment_intent(request):
 
     intent = stripe.PaymentIntent.create(
         amount=amount_in_cents,
-        currency="usd",
+        currency="pkr",  # ✅ fixed (was usd)
         metadata={"booking_id": booking.id},
     )
 
@@ -46,34 +46,42 @@ def create_payment_intent(request):
     return Response({"client_secret": intent.client_secret})
 
 
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def payment_status(request, booking_id):
+    try:
+        booking = Booking.objects.get(id=booking_id, guest=request.user)
+        payment = booking.payment
+    except (Booking.DoesNotExist, Payment.DoesNotExist):
+        return Response({"error": "Payment not found."}, status=404)
+
+    return Response({"status": payment.status, "amount": payment.amount})
+
+
 @api_view(["POST"])
 @permission_classes([permissions.AllowAny])
 def stripe_webhook(request):
     payload = request.body
     sig_header = request.META.get("HTTP_STRIPE_SIGNATURE")
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
-    print("DEBUG SECRET:", endpoint_secret)
 
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
-    except (ValueError, stripe.error.SignatureVerificationError) as e:
-        print("WEBHOOK ERROR:", str(e))
+    except (ValueError, stripe.error.SignatureVerificationError):
         return HttpResponse(status=400)
 
     if event["type"] == "payment_intent.succeeded":
-       intent = event["data"]["object"]
-       print("DEBUG: looking for payment_intent id:", intent["id"])
-       try:
-           payment = Payment.objects.get(stripe_payment_id=intent["id"])
-           payment.status = "succeeded"
-           payment.save()
-   
-           booking = payment.booking
-           booking.status = "confirmed"
-           booking.save()
-           print("DEBUG: booking confirmed:", booking.id)
-       except Payment.DoesNotExist:
-            print("DEBUG: NO MATCHING PAYMENT FOUND for", intent["id"])
+        intent = event["data"]["object"]
+        try:
+            payment = Payment.objects.get(stripe_payment_id=intent["id"])
+            payment.status = "succeeded"
+            payment.save()
+
+            booking = payment.booking
+            booking.status = "confirmed"
+            booking.save()
+        except Payment.DoesNotExist:
+            pass
 
     elif event["type"] == "payment_intent.payment_failed":
         intent = event["data"]["object"]
@@ -85,3 +93,23 @@ def stripe_webhook(request):
             pass
 
     return HttpResponse(status=200)
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def confirm_payment(request, booking_id):
+    try:
+        booking = Booking.objects.get(id=booking_id, guest=request.user)
+        payment = booking.payment
+    except (Booking.DoesNotExist, Payment.DoesNotExist):
+        return Response({"error": "Not found."}, status=404)
+
+    # Verify directly with Stripe (safe, doesn't trust frontend blindly)
+    intent = stripe.PaymentIntent.retrieve(payment.stripe_payment_id)
+    if intent.status == "succeeded":
+        payment.status = "succeeded"
+        payment.save()
+        booking.status = "confirmed"
+        booking.save()
+
+    return Response({"status": booking.status})

@@ -1,26 +1,32 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { motion } from 'framer-motion';
-import Divider from '../components/Divider';
+import { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { motion } from "framer-motion";
+import Divider from "../components/Divider";
 
 const Login = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     setLoading(true);
     try {
-      await login(username, password);
-      navigate('/hotels');
+      const loggedInUser = await login(username, password);
+      if (loggedInUser.is_superuser || loggedInUser.is_staff) {
+        navigate("/admin/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Login failed. Check your credentials.');
+      setError(
+        err.response?.data?.detail || "Login failed. Check your credentials.",
+      );
     } finally {
       setLoading(false);
     }
@@ -39,8 +45,12 @@ const Login = () => {
             A
           </span>
         </div>
-        <h2 className="font-display text-2xl text-ink text-center mt-3">Welcome Back</h2>
-        <div className="flex justify-center"><Divider /></div>
+        <h2 className="font-display text-2xl text-ink text-center mt-3">
+          Welcome Back
+        </h2>
+        <div className="flex justify-center">
+          <Divider />
+        </div>
 
         {error && (
           <div className="bg-danger/10 text-danger text-sm rounded-lg px-4 py-2 mb-4">
@@ -50,7 +60,9 @@ const Login = () => {
 
         <form onSubmit={handleSubmit} className="space-y-4 mt-4">
           <div>
-            <label className="block text-sm font-medium text-muted mb-1">Username</label>
+            <label className="block text-sm font-medium text-muted mb-1">
+              Username
+            </label>
             <input
               type="text"
               value={username}
@@ -61,7 +73,9 @@ const Login = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-muted mb-1">Password</label>
+            <label className="block text-sm font-medium text-muted mb-1">
+              Password
+            </label>
             <input
               type="password"
               value={password}
@@ -76,13 +90,16 @@ const Login = () => {
             disabled={loading}
             className="w-full bg-ink text-parchment py-2.5 rounded-lg font-medium hover:bg-gold-dark hover:text-ink transition-all active:scale-95 disabled:opacity-50"
           >
-            {loading ? 'Logging in...' : 'Login'}
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
         <p className="text-sm text-muted text-center mt-6">
-          Don't have an account?{' '}
-          <Link to="/register" className="text-gold-dark font-medium hover:text-gold transition-colors">
+          Don't have an account?{" "}
+          <Link
+            to="/register"
+            className="text-gold-dark font-medium hover:text-gold transition-colors"
+          >
             Register
           </Link>
         </p>
