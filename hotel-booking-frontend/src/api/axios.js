@@ -1,21 +1,24 @@
-import axios from 'axios';
+import axios from "axios";
+
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || "http://localhost:8000/api";
 
 const api = axios.create({
-  baseURL: 'http://localhost:8000/api',
+  baseURL: API_BASE_URL,
   headers: {
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   },
 });
 
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('access_token');
+    const token = localStorage.getItem("access_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 let isRefreshing = false;
@@ -52,21 +55,21 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refresh_token');
+      const refreshToken = localStorage.getItem("refresh_token");
 
       if (!refreshToken) {
         isRefreshing = false;
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(error);
       }
 
       try {
-        const res = await axios.post('http://localhost:8000/api/auth/login/refresh/', {
+        const res = await axios.post(`${API_BASE_URL}/auth/login/refresh/`, {
           refresh: refreshToken,
         });
         const newAccessToken = res.data.access;
-        localStorage.setItem('access_token', newAccessToken);
+        localStorage.setItem("access_token", newAccessToken);
 
         api.defaults.headers.Authorization = `Bearer ${newAccessToken}`;
         originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
@@ -79,13 +82,13 @@ api.interceptors.response.use(
         processQueue(refreshError, null);
         isRefreshing = false;
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 
 export default api;
