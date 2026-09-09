@@ -10,9 +10,6 @@ from datetime import timedelta
 
 load_dotenv()
 
-print("DEBUG >>> SECRET_KEY value:", repr(os.getenv("SECRET_KEY")))
-print("DEBUG >>> All env keys with SECRET:", [k for k in os.environ.keys() if "SECRET" in k])
-
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
